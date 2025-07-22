@@ -1,0 +1,4 @@
+# todo_app/requirements.txt
+tkcalendar>=1.6.1
+python-dateutil>=2.8.2
+google-api-python-client>=2.0.0  # 可选，用于Google Drive备份

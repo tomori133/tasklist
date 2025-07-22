@@ -1,0 +1,11 @@
+{
+    "app_title": "待办事项",
+    "add_button": "添加",
+    "refresh_button": "刷新",
+    "status": "状态",
+    "task_name": "任务名称",
+    "date": "日期",
+    "category": "分类",
+    "confirm_delete": "确认删除",
+    "delete_message": "确定要删除此任务吗？"
+}
