@@ -5,6 +5,7 @@ from tkcalendar import DateEntry
 from typing import Optional, Dict
 from ..cli.core import TaskManager
 import logging
+import datetime
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -32,10 +33,105 @@ class TodoApp:
         self._center_window(1000, 700)
         self.root.minsize(800, 600)
 
+    def _setup_styles(self):
+        """设置应用程序样式"""
+        style = ttk.Style()
+
+        # 使用clam主题作为基础
+        style.theme_use('clam')
+
+        # 主窗口背景
+        style.configure('.', background='#f5f5f5')
+
+        # 按钮样式
+        style.configure('TButton',
+                        font=('Segoe UI', 10),
+                        padding=6,
+                        relief=tk.FLAT,
+                        background='#e1e1e1',
+                        foreground='#333333')
+        style.map('TButton',
+                  background=[('active', '#d5d5d5'), ('pressed', '#c9c9c9')],
+                  relief=[('pressed', 'sunken'), ('!pressed', 'flat')])
+
+        # 工具栏按钮特殊样式
+        style.configure('Toolbutton.TButton',
+                        font=('Segoe UI', 10, 'bold'),
+                        padding=8)
+
+        # 标签样式
+        style.configure('TLabel',
+                        font=('Segoe UI', 10),
+                        background='#f5f5f5',
+                        foreground='#333333')
+
+        # 输入框样式
+        style.configure('TEntry',
+                        fieldbackground='white',
+                        foreground='#333333',
+                        padding=5)
+
+        # 下拉框样式
+        style.configure('TCombobox',
+                        fieldbackground='white',
+                        foreground='#333333',
+                        padding=5)
+
+        # 树状视图样式
+        style.configure('Treeview',
+                        font=('Segoe UI', 10),
+                        rowheight=30,
+                        background='white',
+                        fieldbackground='white',
+                        foreground='#333333',
+                        bordercolor='#e1e1e1',
+                        borderwidth=1)
+        style.configure('Treeview.Heading',
+                        font=('Segoe UI', 10, 'bold'),
+                        background='#e1e1e1',
+                        foreground='#333333',
+                        relief=tk.FLAT)
+        style.map('Treeview',
+                  background=[('selected', '#4a98db')],
+                  foreground=[('selected', 'white')])
+
+        # 滚动条样式
+        style.configure('Vertical.TScrollbar',
+                        background='#e1e1e1',
+                        troughcolor='#f5f5f5',
+                        relief=tk.FLAT,
+                        bordercolor='#e1e1e1',
+                        arrowsize=12)
+        style.configure('Horizontal.TScrollbar',
+                        background='#e1e1e1',
+                        troughcolor='#f5f5f5',
+                        relief=tk.FLAT,
+                        bordercolor='#e1e1e1',
+                        arrowsize=12)
+
+        # 状态栏样式
+        style.configure('Status.TFrame',
+                        background='#e1e1e1',
+                        relief=tk.SUNKEN)
+        style.configure('Status.TLabel',
+                        font=('Segoe UI', 9),
+                        background='#e1e1e1',
+                        foreground='#555555',
+                        padding=3,
+                        anchor=tk.W)
+
+        # 对话框样式
+        style.configure('Dialog.TFrame',
+                        background='#f5f5f5')
+
+        # 标签样式
+        self.tree.tag_configure('done', foreground='#888888')
+        self.tree.tag_configure('pending', foreground='#333333')
+
     def _setup_ui(self):
         """设置用户界面"""
         # 主框架
-        self.main_frame = ttk.Frame(self.root)
+        self.main_frame = ttk.Frame(self.root, style='Dialog.TFrame')
         self.main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         # 顶部工具栏
@@ -62,32 +158,37 @@ class TodoApp:
         ttk.Button(
             toolbar, text="➕ 添加任务",
             command=self._show_add_dialog,
-            width=12
+            width=12,
+            style = 'Toolbutton.TButton'
         ).pack(side=tk.LEFT, padx=2)
 
         ttk.Button(
             toolbar, text="🔄 刷新",
             command=self._reload_tasks,
-            width=8
+            width=8,
+            style='Toolbutton.TButton'
         ).pack(side=tk.LEFT, padx=2)
 
         ttk.Button(
             toolbar, text="🔍 搜索",
             command=self._show_search_dialog,
-            width=8
+            width=8,
+            style='Toolbutton.TButton'
         ).pack(side=tk.LEFT, padx=2)
 
         ttk.Button(
             toolbar, text="📊 统计",
             command=self._show_stats,
-            width=8
+            width=8,
+            style='Toolbutton.TButton'
         ).pack(side=tk.LEFT, padx=2)
 
         # 右侧按钮
         ttk.Button(
             toolbar, text="⚙️ 设置",
             command=self._show_settings,
-            width=8
+            width=8,
+            style='Toolbutton.TButton'
         ).pack(side=tk.RIGHT, padx=2)
 
     def _setup_filter_bar(self):
@@ -196,7 +297,7 @@ class TodoApp:
         self.status_var = tk.StringVar()
         self.status_var.set("就绪 | 总任务: 0")
 
-        status_bar = ttk.Frame(self.main_frame, height=20)
+        status_bar = ttk.Frame(self.main_frame, height=20, style='Status.TFrame')
         status_bar.pack(fill=tk.X, pady=(10, 0))
 
         ttk.Label(
@@ -208,7 +309,13 @@ class TodoApp:
 
     def _setup_context_menu(self):
         """设置右键菜单"""
-        self.context_menu = tk.Menu(self.root, tearoff=0)
+        self.context_menu = tk.Menu(self.root, tearoff=0,
+                                  bg='white',
+                                  fg='#333333',
+                                  bd=1,
+                                  activebackground='#4a98db',
+                                  activeforeground='white',
+                                  font=('Segoe UI', 10))
         self.context_menu.add_command(
             label="✅ 标记完成/未完成",
             command=self._toggle_selected_tasks
@@ -234,18 +341,40 @@ class TodoApp:
         try:
             # 获取筛选条件
             category = None if self.category_var.get() == "全部" else self.category_var.get()
-            status = self.status_var.get()
 
+            # 处理状态筛选
+            status = self.status_combo.get()
+            # print(status)
             filter_done = None
             if status == "已完成":
                 filter_done = True
             elif status == "未完成":
                 filter_done = False
 
+            # 处理日期筛选
+            date_range = self.date_var.get()
+            start_date = None
+            end_date = None
+
+            if date_range != "全部":
+                today = datetime.date.today()
+                if date_range == "今天":
+                    start_date = today.strftime("%Y-%m-%d")
+                    end_date = start_date
+                elif date_range == "本周":
+                    start_date = (today - datetime.timedelta(days=today.weekday())).strftime("%Y-%m-%d")
+                    end_date = (today + datetime.timedelta(days=6 - today.weekday())).strftime("%Y-%m-%d")
+                elif date_range == "本月":
+                    start_date = today.replace(day=1).strftime("%Y-%m-%d")
+                    next_month = today.replace(day=28) + datetime.timedelta(days=4)
+                    end_date = (next_month - datetime.timedelta(days=next_month.day)).strftime("%Y-%m-%d")
+
             # 获取任务数据
             tasks = self.manager.get_tasks(
                 filter_done=filter_done,
-                category=category
+                category=category,
+                start_date=start_date,
+                end_date=end_date
             )
 
             # 更新UI
@@ -305,6 +434,9 @@ class TodoApp:
         dialog.transient(self.root)
         dialog.grab_set()
         self._center_window_on_parent(dialog, 400, 250)
+
+        # 设置对话框样式
+        dialog.configure(bg='#f5f5f5')
 
         # 表单元素
         ttk.Label(dialog, text="任务名称:").grid(row=0, column=0, padx=10, pady=10, sticky=tk.E)

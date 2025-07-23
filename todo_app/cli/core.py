@@ -104,6 +104,8 @@ class TaskManager:
             filter_done: Optional[bool] = None,
             category: Optional[str] = None,
             search_query: Optional[str] = None,
+            start_date: Optional[str] = None,
+            end_date: Optional[str] = None,
             limit: Optional[int] = None,
             offset: Optional[int] = None
     ) -> List[Dict]:
@@ -113,6 +115,8 @@ class TaskManager:
             filter_done: 是否筛选完成状态 (True/False/None)
             category: 按分类筛选
             search_query: 搜索关键词
+            start_date: 开始日期 (YYYY-MM-DD)
+            end_date: 结束日期 (YYYY-MM-DD)
             limit: 分页大小
             offset: 分页偏移量
 
@@ -136,6 +140,14 @@ class TaskManager:
                 if search_query:
                     query += " AND name LIKE ?"
                     params.append(f"%{search_query}%")
+
+                if start_date:
+                    query += " AND date >= ?"
+                    params.append(start_date)
+
+                if end_date:
+                    query += " AND date <= ?"
+                    params.append(end_date)
 
                 query += " ORDER BY date ASC, created_at ASC"
 
@@ -167,6 +179,12 @@ class TaskManager:
                 if search_query:
                     search_lower = search_query.lower()
                     tasks = [t for t in tasks if search_lower in t['name'].lower()]
+
+                # 日期筛选
+                if start_date:
+                    tasks = [t for t in tasks if t['date'] >= start_date]
+                if end_date:
+                    tasks = [t for t in tasks if t['date'] <= end_date]
 
                 # 排序
                 tasks.sort(key=lambda x: (x['date'], x.get('created_at', '')))
