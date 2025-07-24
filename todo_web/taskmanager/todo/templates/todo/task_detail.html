@@ -1,0 +1,197 @@
+{% extends 'todo/base.html' %}
+
+{% block title %}{{ task.name }} - 任务详情{% endblock %}
+
+{% block extra_css %}
+<style>
+    .task-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .task-title {
+        font-size: 1.5rem;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .task-status {
+        padding: 0.3rem 0.8rem;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .status-pending {
+        background-color: #f1c40f;
+        color: #333;
+    }
+
+    .status-completed {
+        background-color: #2ecc71;
+        color: white;
+    }
+
+    .task-details {
+        margin-bottom: 1.5rem;
+    }
+
+    .detail-item {
+        margin-bottom: 1rem;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #7f8c8d;
+        margin-bottom: 0.3rem;
+        display: block;
+    }
+
+    .detail-value {
+        color: #2c3e50;
+    }
+
+    .task-description {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 4px;
+        border-left: 3px solid #3498db;
+        margin: 1.5rem 0;
+    }
+
+    .priority {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        color: white;
+    }
+
+    .priority-high {
+        background-color: #e74c3c;
+    }
+
+    .priority-medium {
+        background-color: #f39c12;
+    }
+
+    .priority-low {
+        background-color: #2ecc71;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .task-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">任务详情</h1>
+
+<div class="task-card">
+    <div class="task-header">
+        <h2 class="task-title">{{ task.name }}</h2>
+        <span class="task-status {% if task.done %}status-completed{% else %}status-pending{% endif %}">
+            {% if task.done %}已完成{% else %}未完成{% endif %}
+        </span>
+    </div>
+
+    <div class="task-details">
+        <div class="detail-item">
+            <span class="detail-label">优先级</span>
+            <span class="detail-value">
+                <span class="priority priority-{{ task.priority|lower }}">
+                    {{ task.get_priority_display }}优先级
+                </span>
+            </span>
+        </div>
+
+        <div class="detail-item">
+            <span class="detail-label">截止日期</span>
+            <span class="detail-value">{{ task.date|date:"Y-m-d" }}</span>
+        </div>
+
+        <div class="detail-item">
+            <span class="detail-label">创建时间</span>
+            <span class="detail-value">{{ task.created_at|date:"Y-m-d H:i" }}</span>
+        </div>
+
+        <div class="detail-item">
+            <span class="detail-label">最后更新</span>
+            <span class="detail-value">{{ task.updated_at|date:"Y-m-d H:i" }}</span>
+        </div>
+
+        <div class="detail-item">
+            <span class="detail-label">任务描述</span>
+            <div class="task-description detail-value">
+                {{ task.description|linebreaks|default:"无描述信息" }}
+            </div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <a href="{% url 'task-list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> 返回列表
+        </a>
+        
+        {% if not task.done %}
+            <a href="{% url 'task-toggle' task.id %}" class="btn btn-success">
+                <i class="bi bi-check"></i> 标记为完成
+            </a>
+        {% else %}
+            <a href="{% url 'task-toggle' task.id %}" class="btn btn-warning">
+                <i class="bi bi-arrow-counterclockwise"></i> 标记为未完成
+            </a>
+        {% endif %}
+        
+        <a href="{% url 'task-update' task.id %}" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> 编辑任务
+        </a>
+        <a href="{% url 'task-delete' task.id %}" class="btn btn-danger">
+            <i class="bi bi-trash"></i> 删除任务
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 删除按钮确认
+    document.querySelector('.btn-danger').addEventListener('click', function(e) {
+        if(!confirm('确定要删除这个任务吗？此操作不可恢复。')) {
+            e.preventDefault();
+        }
+    });
+</script>
+{% endblock %}

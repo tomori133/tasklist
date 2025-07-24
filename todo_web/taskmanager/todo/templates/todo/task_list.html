@@ -1,0 +1,254 @@
+{% extends 'todo/base.html' %}
+
+{% block title %}任务列表 - 待办事项管理{% endblock %}
+
+{% block extra_css %}
+<style>
+    .task-filters {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-label {
+        color: #555;
+        font-weight: 500;
+    }
+
+    .filter-select {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .task-list {
+        list-style: none;
+    }
+
+    .task-item {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .task-info {
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .task-name {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.3rem;
+        display: block;
+    }
+
+    .task-name.done {
+        text-decoration: line-through;
+        color: #7f8c8d;
+    }
+
+    .task-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    .task-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .task-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .stat-item {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        flex: 1;
+        min-width: 150px;
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+
+    .stat-label {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        color: #ddd;
+        margin-bottom: 1rem;
+    }
+
+    .empty-text {
+        color: #7f8c8d;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">任务列表</h1>
+
+<div class="task-stats">
+    <div class="stat-item">
+        <div class="stat-number">{{ total_tasks }}</div>
+        <div class="stat-label">总任务数</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">{{ pending_tasks }}</div>
+        <div class="stat-label">未完成任务</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">{{ completed_tasks }}</div>
+        <div class="stat-label">已完成任务</div>
+    </div>
+</div>
+
+<div class="task-filters">
+    <div class="filter-group">
+        <span class="filter-label">筛选：</span>
+        <select class="filter-select" id="statusFilter">
+            <option value="all">所有任务</option>
+            <option value="pending">未完成</option>
+            <option value="completed">已完成</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <span class="filter-label">排序：</span>
+        <select class="filter-select" id="sortFilter">
+            <option value="recent">最近创建</option>
+            <option value="due_date">截止日期</option>
+            <option value="priority">优先级</option>
+        </select>
+    </div>
+    <a href="{% url 'task-create' %}" class="btn btn-primary">
+        <i class="bi bi-plus"></i> 添加任务
+    </a>
+</div>
+
+{% if tasks %}
+<ul class="task-list" id="taskList">
+    {% for task in tasks %}
+    <li class="task-item {% if task.done %}completed{% endif %}" data-status="{% if task.done %}completed{% else %}pending{% endif %}" data-priority="{{ task.priority }}" data-date="{{ task.date|date:'Ymd' }}">
+        <div class="task-info">
+            <span class="task-name {% if task.done %}done{% endif %}">{{ task.name }}</span>
+            <div class="task-meta">
+                <span>
+                    <i class="bi bi-calendar"></i> {{ task.date|date:"Y-m-d" }}
+                </span>
+                <span>
+                    <i class="bi bi-flag"></i> {{ task.get_priority_display }}
+                </span>
+                <span>
+                    <i class="bi bi-clock"></i> {{ task.updated_at|date:"m-d H:i" }}
+                </span>
+            </div>
+        </div>
+        <div class="task-actions">
+            <a href="{% url 'task-detail' task.id %}" class="btn btn-secondary">
+                <i class="bi bi-eye"></i>
+            </a>
+            <a href="{% url 'task-update' task.id %}" class="btn btn-primary">
+                <i class="bi bi-pencil"></i>
+            </a>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">
+        <i class="bi bi-list-task"></i>
+    </div>
+    <h3 class="empty-text">暂无任务</h3>
+    <a href="{% url 'task-create' %}" class="btn btn-primary">
+        <i class="bi bi-plus"></i> 创建第一个任务
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 任务筛选和排序功能
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusFilter = document.getElementById('statusFilter');
+        const sortFilter = document.getElementById('sortFilter');
+        const taskList = document.getElementById('taskList');
+        const tasks = Array.from(taskList.getElementsByClassName('task-item'));
+
+        function filterAndSortTasks() {
+            const status = statusFilter.value;
+            const sortBy = sortFilter.value;
+            
+            // 筛选任务
+            let filteredTasks = tasks.filter(task => {
+                if (status === 'all') return true;
+                return task.dataset.status === status;
+            });
+            
+            // 排序任务
+            filteredTasks.sort((a, b) => {
+                switch (sortBy) {
+                    case 'due_date':
+                        return a.dataset.date.localeCompare(b.dataset.date);
+                    case 'priority':
+                        const priorityOrder = { 'High': 1, 'Medium': 2, 'Low': 3 };
+                        return priorityOrder[a.dataset.priority] - priorityOrder[b.dataset.priority];
+                    case 'recent':
+                    default:
+                        // 默认按最近创建排序（DOM中已按此顺序排列）
+                        return tasks.indexOf(a) - tasks.indexOf(b);
+                }
+            });
+            
+            // 更新显示
+            filteredTasks.forEach(task => {
+                taskList.appendChild(task);
+            });
+        }
+        
+        statusFilter.addEventListener('change', filterAndSortTasks);
+        sortFilter.addEventListener('change', filterAndSortTasks);
+    });
+</script>
+{% endblock %}

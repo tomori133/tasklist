@@ -1,0 +1,352 @@
+{% extends 'todo/base.html' %}
+
+{% block title %}统计信息 - 待办事项管理{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 保持原有的CSS样式不变 */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stat-title {
+        color: #7f8c8d;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-change {
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .increase {
+        color: #2ecc71;
+    }
+
+    .decrease {
+        color: #e74c3c;
+    }
+
+    .stat-icon {
+        align-self: flex-end;
+        font-size: 2.5rem;
+        opacity: 0.2;
+        margin-top: -1rem;
+    }
+
+    /* 图表样式 */
+    .charts-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .chart-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+    }
+
+    .chart-title {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+    }
+
+    .chart-placeholder {
+        width: 100%;
+        height: 250px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* 进度环形图样式 */
+    .donut-chart {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .donut-ring {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: #f1f1f1;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .donut-segment {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        clip: rect(0, 180px, 180px, 90px);
+    }
+
+    .donut-segment.completed {
+        background-color: #2ecc71;
+    }
+
+    .donut-segment.pending {
+        background-color: #e74c3c;
+        clip: rect(0, 90px, 180px, 0);
+    }
+
+    .donut-text {
+        position: absolute;
+        text-align: center;
+    }
+
+    .donut-percentage {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+
+    .donut-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    /* 柱状图样式 */
+    .bar-chart {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: flex-end;
+        gap: 15%;
+        padding-bottom: 30px;
+        position: relative;
+    }
+
+    .bar-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .bar {
+        width: 100%;
+        border-radius: 4px 4px 0 0;
+    }
+
+    .bar-high {
+        background-color: #e74c3c;
+    }
+
+    .bar-medium {
+        background-color: #f39c12;
+    }
+
+    .bar-low {
+        background-color: #2ecc71;
+    }
+
+    .bar-label {
+        margin-top: 0.5rem;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+
+    .bar-value {
+        position: absolute;
+        bottom: 100%;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+
+    .chart-axis {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 1px;
+        background-color: #ddd;
+    }
+
+    /* 最近任务列表 */
+    .recent-tasks {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+    }
+
+    .recent-title {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+    }
+
+    .recent-list {
+        list-style: none;
+    }
+
+    .recent-item {
+        padding: 0.8rem 0;
+        border-bottom: 1px solid #f1f1f1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .recent-item:last-child {
+        border-bottom: none;
+    }
+
+    .recent-task-name {
+        color: #2c3e50;
+    }
+
+    .recent-task-date {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    @media (max-width: 768px) {
+        .charts-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">统计信息</h1>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-title">总任务数</div>
+        <div class="stat-value">{{ total_tasks }}</div>
+        <div class="stat-change {% if weekly_change.total_tasks >= 0 %}increase{% else %}decrease{% endif %}">
+            <i class="bi bi-arrow-{% if weekly_change.total_tasks >= 0 %}up{% else %}down{% endif %}"></i>
+            较上周{% if weekly_change.total_tasks >= 0 %}增加{% else %}减少{% endif %}
+            {% if weekly_change.total_tasks >= 0 %}{{ weekly_change.total_tasks }}{% else %}{{ weekly_change.total_tasks|stringformat:"d"|slice:"1:" }}{% endif %} 个
+        </div>
+        <i class="bi bi-list-task stat-icon"></i>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-title">已完成任务</div>
+        <div class="stat-value">{{ completed_tasks }}</div>
+        <div class="stat-change {% if weekly_change.completed_tasks >= 0 %}increase{% else %}decrease{% endif %}">
+            <i class="bi bi-arrow-{% if weekly_change.completed_tasks >= 0 %}up{% else %}down{% endif %}"></i>
+            较上周{% if weekly_change.completed_tasks >= 0 %}增加{% else %}减少{% endif %}
+            {% if weekly_change.completed_tasks >= 0 %}{{ weekly_change.completed_tasks }}{% else %}{{ weekly_change.completed_tasks|stringformat:"d"|slice:"1:" }}{% endif %} 个
+        </div>
+        <i class="bi bi-check-circle stat-icon"></i>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-title">未完成任务</div>
+        <div class="stat-value">{{ pending_tasks }}</div>
+        <div class="stat-change {% if weekly_change.pending_tasks >= 0 %}increase{% else %}decrease{% endif %}">
+            <i class="bi bi-arrow-{% if weekly_change.pending_tasks >= 0 %}up{% else %}down{% endif %}"></i>
+            较上周{% if weekly_change.pending_tasks >= 0 %}增加{% else %}减少{% endif %}
+            {% if weekly_change.pending_tasks >= 0 %}{{ weekly_change.pending_tasks }}{% else %}{{ weekly_change.pending_tasks|stringformat:"d"|slice:"1:" }}{% endif %} 个
+        </div>
+        <i class="bi bi-clock stat-icon"></i>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-title">完成率</div>
+        <div class="stat-value">{{ completion_rate }}%</div>
+        <div class="stat-change {% if weekly_change.completion_rate >= 0 %}increase{% else %}decrease{% endif %}">
+            <i class="bi bi-arrow-{% if weekly_change.completion_rate >= 0 %}up{% else %}down{% endif %}"></i>
+            较上周{% if weekly_change.completion_rate >= 0 %}上升{% else %}下降{% endif %}
+            {% if weekly_change.completion_rate >= 0 %}{{ weekly_change.completion_rate }}{% else %}{{ weekly_change.completion_rate|stringformat:"d"|slice:"1:" }}{% endif %}%
+        </div>
+        <i class="bi bi-percent stat-icon"></i>
+    </div>
+</div>
+
+<div class="charts-container">
+    <div class="chart-card">
+        <div class="chart-title">任务完成情况</div>
+        <div class="chart-placeholder">
+            <div class="donut-chart">
+                <div class="donut-ring">
+                    <!-- 使用预先计算好的角度值 -->
+                    <div class="donut-segment completed" style="transform: rotate({{ completion_angle }}deg);"></div>
+                    <div class="donut-segment pending" style="transform: rotate({{ completion_angle }}deg);"></div>
+                </div>
+                <div class="donut-text">
+                    <div class="donut-percentage">{{ completion_rate }}%</div>
+                    <div class="donut-label">已完成</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="chart-card">
+        <div class="chart-title">任务优先级分布</div>
+        <div class="chart-placeholder">
+            <div class="bar-chart">
+                <div class="bar-container">
+                    <div class="bar-value">{{ priority_counts.High }}</div>
+                    <div class="bar bar-high" style="height: {{ priority_percentages.High }}%;"></div>
+                    <div class="bar-label">高优先级</div>
+                </div>
+                <div class="bar-container">
+                    <div class="bar-value">{{ priority_counts.Medium }}</div>
+                    <div class="bar bar-medium" style="height: {{ priority_percentages.Medium }}%;"></div>
+                    <div class="bar-label">中优先级</div>
+                </div>
+                <div class="bar-container">
+                    <div class="bar-value">{{ priority_counts.Low }}</div>
+                    <div class="bar bar-low" style="height: {{ priority_percentages.Low }}%;"></div>
+                    <div class="bar-label">低优先级</div>
+                </div>
+                <div class="chart-axis"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="recent-tasks">
+    <div class="recent-title">最近任务</div>
+    <ul class="recent-list">
+        {% for task in recent_tasks %}
+        <li class="recent-item">
+            <span class="recent-task-name">{{ task.name }}</span>
+            <span class="recent-task-date">{{ task.date|date:"Y-m-d" }}</span>
+        </li>
+        {% empty %}
+        <li class="recent-item">
+            <span class="recent-task-name">暂无任务数据</span>
+            <span class="recent-task-date"></span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
