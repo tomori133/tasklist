@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}待办事项管理{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            line-height: 1.6;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            color: white;
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand i {
+            margin-right: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-left: 1.5rem;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            transition: opacity 0.3s;
+        }
+
+        .nav-link:hover {
+            opacity: 0.8;
+        }
+
+        .nav-link i {
+            margin-right: 0.3rem;
+        }
+
+        .navbar-toggler {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* 主要内容区域 */
+        .content {
+            flex: 1;
+            padding: 2rem 0;
+        }
+
+        .page-title {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 0.7rem 1.2rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-secondary {
+            background-color: #ecf0f1;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background-color: #dcdde1;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+
+        /* 表单样式 */
+        .form-control {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.25);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-actions {
+            margin-top: 1.5rem;
+        }
+
+        /* 错误消息样式 */
+        .error-message {
+            background-color: #fee;
+            color: #e74c3c;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #fcc;
+        }
+
+        .field-error {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: -0.8rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        /* 页脚样式 */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+            border-top: 1px solid #eaeaea;
+            color: #666;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .navbar-toggler {
+                display: block;
+            }
+
+            .nav-links-container {
+                position: absolute;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background-color: #2c3e50;
+                padding: 1rem;
+                display: none;
+                flex-direction: column;
+            }
+
+            .nav-links-container.show {
+                display: flex;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .nav-item {
+                margin: 0.5rem 0;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a class="navbar-brand" href="{% url 'task-list' %}">
+                <i class="bi bi-check2-square"></i>待办事项管理
+            </a>
+            <button class="navbar-toggler" id="navbarToggler">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="nav-links-container" id="navbarNav">
+                {% if user.is_authenticated %}
+                <ul class="nav-links">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'task-list' %}">
+                            <i class="bi bi-list-task"></i>任务列表
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'task-create' %}">
+                            <i class="bi bi-plus-circle"></i>添加任务
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'task-stats' %}">
+                            <i class="bi bi-bar-chart"></i>统计信息
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+                <ul class="nav-links">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <span class="nav-link">欢迎, {{ user.username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-right"></i>退出
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="bi bi-box-arrow-in-right"></i>登录
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="footer">
+        <p>&copy; {% now "Y" %} 待办事项管理系统</p>
+    </div>
+
+    <script>
+        // 移动端导航菜单切换
+        document.getElementById('navbarToggler').addEventListener('click', function() {
+            const navContainer = document.getElementById('navbarNav');
+            navContainer.classList.toggle('show');
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
