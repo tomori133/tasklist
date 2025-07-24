@@ -1,6 +1,6 @@
 # 简易任务清单
 # 环境安装
-# 创建虚拟环境
+创建虚拟环境
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate     # Windows
