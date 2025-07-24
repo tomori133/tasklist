@@ -1,0 +1,225 @@
+{% extends 'todo/base.html' %}
+
+{% block title %}登录 - 待办事项管理{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 登录页面专用样式，确保不受其他样式干扰 */
+    .login-fullpage {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #f0f2f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    .login-box {
+        width: 100%;
+        max-width: 400px;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        padding: 2.5rem;
+        box-sizing: border-box;
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .login-title {
+        color: #1a73e8;
+        margin: 0 0 0.5rem 0;
+        font-size: 2rem;
+    }
+
+    .login-desc {
+        color: #5f6368;
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: normal;
+    }
+
+    .login-form .form-group {
+        margin-bottom: 1.2rem;
+    }
+
+    .login-form label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #202124;
+        font-size: 0.95rem;
+    }
+
+    .login-form input {
+        width: 100%;
+        padding: 0.9rem;
+        border: 1px solid #dadce0;
+        border-radius: 6px;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+
+    .login-form input:focus {
+        outline: none;
+        border-color: #1a73e8;
+        box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 0.9rem;
+        background-color: #1a73e8;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 0.5rem;
+        transition: background-color 0.2s;
+    }
+
+    .login-btn:hover {
+        background-color: #1765cc;
+    }
+
+    .divider-line {
+        display: flex;
+        align-items: center;
+        margin: 1.8rem 0;
+    }
+
+    .divider-line::before,
+    .divider-line::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background-color: #dadce0;
+    }
+
+    .divider-line span {
+        padding: 0 1rem;
+        color: #5f6368;
+        font-size: 0.85rem;
+    }
+
+    .register-btn {
+        display: block;
+        width: 100%;
+        padding: 0.9rem;
+        background-color: #34a853;
+        color: white;
+        border-radius: 6px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 1rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        transition: background-color 0.2s;
+    }
+
+    .register-btn:hover {
+        background-color: #2d9748;
+        color: white;
+    }
+
+    .back-home {
+        display: block;
+        text-align: center;
+        color: #1a73e8;
+        text-decoration: none;
+        font-size: 0.95rem;
+    }
+
+    .back-home:hover {
+        text-decoration: underline;
+    }
+
+    .error-notice {
+        background-color: #fce8e6;
+        color: #d93025;
+        padding: 0.8rem;
+        border-radius: 6px;
+        margin-bottom: 1.2rem;
+        font-size: 0.9rem;
+    }
+
+    .field-error {
+        color: #d93025;
+        font-size: 0.85rem;
+        margin-top: 0.3rem;
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 主登录容器 -->
+<div class="login-fullpage">
+    <div class="login-box">
+        <!-- 登录标题区域 -->
+        <div class="login-header">
+            <h1 class="login-title">待办事项管理</h1>
+            <p class="login-desc">请登录以继续使用系统</p>
+        </div>
+
+        <!-- 登录表单 -->
+        <form method="post" class="login-form">
+            {% csrf_token %}
+
+            <!-- 错误提示 -->
+            {% if form.non_field_errors %}
+                <div class="error-notice">
+                    {{ form.non_field_errors.0 }}
+                </div>
+            {% endif %}
+
+            <!-- 用户名输入 -->
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">用户名</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <span class="field-error">{{ form.username.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <!-- 密码输入 -->
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}">密码</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <span class="field-error">{{ form.password.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <!-- 登录按钮 -->
+            <button type="submit" class="login-btn">登录</button>
+        </form>
+
+        <!-- 分隔线 -->
+        <div class="divider-line">
+            <span>或者</span>
+        </div>
+
+        <!-- 注册链接 -->
+        <a href="#" class="register-btn">创建新账号</a>
+
+        <!-- 返回首页链接 -->
+        <a href="{% url 'task-list' %}" class="back-home">返回首页</a>
+    </div>
+</div>
+{% endblock %}
+
+<!-- 屏蔽基础模板中的其他区块，防止样式冲突 -->
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block content_wrapper %}{% endblock %}
